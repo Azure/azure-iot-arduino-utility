@@ -11,12 +11,17 @@
 #endif /* __cplusplus */
 
 #include "azure_c_shared_utility/agenttime.h"
+#include "azure_c_shared_utility/optimize_size.h"
+
+#ifdef TIZENRT
+#undef LOG_INFO
+#endif
 
 typedef enum LOG_CATEGORY_TAG
 {
-    LOG_ERROR,
-    LOG_INFO,
-    LOG_TRACE
+    AZ_LOG_ERROR,
+    AZ_LOG_INFO,
+    AZ_LOG_TRACE
 } LOG_CATEGORY;
 
 #if defined _MSC_VER
@@ -35,6 +40,14 @@ typedef void(*LOGGER_LOG)(LOG_CATEGORY log_category, const char* file, const cha
 #define LOG(...)
 #define LogInfo(...)
 #define LogError(...)
+#define xlogging_get_log_function() NULL
+#define xlogging_set_log_function(...)
+#define LogErrorWinHTTPWithGetLastErrorAsString(...)
+#define UNUSED(x) (void)(x)
+#elif (defined MINIMAL_LOGERROR)
+#define LOG(...)
+#define LogInfo(...)
+#define LogError(...) printf("error %s: line %d\n",__FILE__,__LINE__);
 #define xlogging_get_log_function() NULL
 #define xlogging_set_log_function(...)
 #define LogErrorWinHTTPWithGetLastErrorAsString(...)
@@ -77,13 +90,13 @@ so we compacted the log in the macro LogInfo.
 #endif
 
 #if defined _MSC_VER
-#define LogInfo(FORMAT, ...) do{LOG(LOG_INFO, LOG_LINE, FORMAT, __VA_ARGS__); }while(0)
+#define LogInfo(FORMAT, ...) do{LOG(AZ_LOG_INFO, LOG_LINE, FORMAT, __VA_ARGS__); }while(0)
 #else
-#define LogInfo(FORMAT, ...) do{LOG(LOG_INFO, LOG_LINE, FORMAT, ##__VA_ARGS__); }while(0)
+#define LogInfo(FORMAT, ...) do{LOG(AZ_LOG_INFO, LOG_LINE, FORMAT, ##__VA_ARGS__); }while(0)
 #endif
 
 #if defined _MSC_VER
-#define LogError(FORMAT, ...) do{ LOG(LOG_ERROR, LOG_LINE, FORMAT, __VA_ARGS__); }while(0)
+#define LogError(FORMAT, ...) do{ LOG(AZ_LOG_ERROR, LOG_LINE, FORMAT, __VA_ARGS__); }while(0)
 #define TEMP_BUFFER_SIZE 1024
 #define MESSAGE_BUFFER_SIZE 260
 #define LogErrorWinHTTPWithGetLastErrorAsString(FORMAT, ...) do { \
@@ -117,7 +130,7 @@ so we compacted the log in the macro LogInfo.
                 }\
             } while(0)
 #else
-#define LogError(FORMAT, ...) do{ LOG(LOG_ERROR, LOG_LINE, FORMAT, ##__VA_ARGS__); }while(0)
+#define LogError(FORMAT, ...) do{ LOG(AZ_LOG_ERROR, LOG_LINE, FORMAT, ##__VA_ARGS__); }while(0)
 #endif
 
 #ifdef __cplusplus

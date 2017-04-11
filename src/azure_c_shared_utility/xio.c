@@ -2,11 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
 #include <stddef.h>
 #include "azure_c_shared_utility/gballoc.h"
+#include "azure_c_shared_utility/optimize_size.h"
 #include "azure_c_shared_utility/xio.h"
 
 static const char* CONCRETE_OPTIONS = "concreteOptions";
@@ -14,7 +12,7 @@ static const char* CONCRETE_OPTIONS = "concreteOptions";
 typedef struct XIO_INSTANCE_TAG
 {
     const IO_INTERFACE_DESCRIPTION* io_interface_description;
-    XIO_HANDLE concrete_xio_handle;
+    CONCRETE_IO_HANDLE concrete_xio_handle;
 } XIO_INSTANCE;
 
 XIO_HANDLE xio_create(const IO_INTERFACE_DESCRIPTION* io_interface_description, const void* xio_create_parameters)
@@ -80,7 +78,7 @@ int xio_open(XIO_HANDLE xio, ON_IO_OPEN_COMPLETE on_io_open_complete, void* on_i
     if (xio == NULL)
     {
         /* Codes_SRS_XIO_01_021: [If handle is NULL, xio_open shall return a non-zero value.] */
-        result = __LINE__;
+        result = __FAILURE__;
     }
     else
     {
@@ -90,7 +88,7 @@ int xio_open(XIO_HANDLE xio, ON_IO_OPEN_COMPLETE on_io_open_complete, void* on_i
         if (xio_instance->io_interface_description->concrete_io_open(xio_instance->concrete_xio_handle, on_io_open_complete, on_io_open_complete_context, on_bytes_received, on_bytes_received_context, on_io_error, on_io_error_context) != 0)
         {
             /* Codes_SRS_XIO_01_022: [If the underlying concrete_io_open fails, xio_open shall return a non-zero value.] */
-            result = __LINE__;
+            result = __FAILURE__;
         }
         else
         {
@@ -109,7 +107,7 @@ int xio_close(XIO_HANDLE xio, ON_IO_CLOSE_COMPLETE on_io_close_complete, void* c
     if (xio == NULL)
     {
         /* Codes_SRS_XIO_01_025: [If handle is NULL, xio_close shall return a non-zero value.] */
-        result = __LINE__;
+        result = __FAILURE__;
     }
     else
     {
@@ -119,7 +117,7 @@ int xio_close(XIO_HANDLE xio, ON_IO_CLOSE_COMPLETE on_io_close_complete, void* c
         if (xio_instance->io_interface_description->concrete_io_close(xio_instance->concrete_xio_handle, on_io_close_complete, callback_context) != 0)
         {
             /* Codes_SRS_XIO_01_026: [If the underlying concrete_io_close fails, xio_close shall return a non-zero value.] */
-            result = __LINE__;
+            result = __FAILURE__;
         }
         else
         {
@@ -139,7 +137,7 @@ int xio_send(XIO_HANDLE xio, const void* buffer, size_t size, ON_SEND_COMPLETE o
     /* Codes_SRS_XIO_01_010: [If handle is NULL, xio_send shall return a non-zero value.] */
     if (xio == NULL)
     {
-        result = __LINE__;
+        result = __FAILURE__;
     }
     else
     {
@@ -174,7 +172,7 @@ int xio_setoption(XIO_HANDLE xio, const char* optionName, const void* value)
     /* Codes_SRS_XIO_03_030: [If the xio argument or the optionName argument is NULL, xio_setoption shall return a non-zero value.] */
     if (xio == NULL || optionName == NULL)
     {
-        result = __LINE__;
+        result = __FAILURE__;
     }
     else
     {
@@ -186,7 +184,7 @@ int xio_setoption(XIO_HANDLE xio, const char* optionName, const void* value)
             if (OptionHandler_FeedOptions((OPTIONHANDLER_HANDLE)value, xio_instance->concrete_xio_handle) != OPTIONHANDLER_OK)
             {
                 LogError("unable to OptionHandler_FeedOptions");
-                result = __LINE__;
+                result = __FAILURE__;
             }
             else
             {

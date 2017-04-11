@@ -93,20 +93,28 @@ typedef unsigned char bool;
 #define STRUNCATE       80
 #endif  /* !defined (STRUNCATE) */
 
-typedef int errno_t;
-
 extern int strcpy_s(char* dst, size_t dstSizeInBytes, const char* src);
 extern int strcat_s(char* dst, size_t dstSizeInBytes, const char* src);
 extern int strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t maxCount);
 extern int sprintf_s(char* dst, size_t dstSizeInBytes, const char* format, ...);
 #endif
+
 extern unsigned long long strtoull_s(const char* nptr, char** endPtr, int base);
 extern float strtof_s(const char* nptr, char** endPtr);
 extern long double strtold_s(const char* nptr, char** endPtr);
 
+#ifdef _MSC_VER
+#define stricmp _stricmp
+#endif
+
 MOCKABLE_FUNCTION(, int, mallocAndStrcpy_s, char**, destination, const char*, source);
 MOCKABLE_FUNCTION(, int, unsignedIntToString, char*, destination, size_t, destinationSize, unsigned int, value);
 MOCKABLE_FUNCTION(, int, size_tToString, char*, destination, size_t, destinationSize, size_t, value);
+
+/*following logic shall define the TOUPPER and ISDIGIT, we do that because the SDK is not happy with some Arduino implementation of it.*/
+#define TOUPPER(c)      ((((c)>='a') && ((c)<='z'))?(c)-'a'+'A':c)
+#define ISDIGIT(c)      ((((c)>='0') && ((c)<='9'))?1:0)
+
 /*following logic shall define the ISNAN macro*/
 /*if runing on Microsoft Visual C compiler, than ISNAN shall be _isnan*/
 /*else if running on C99 or C11, ISNAN shall be isnan*/

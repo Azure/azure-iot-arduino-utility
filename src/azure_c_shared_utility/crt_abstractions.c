@@ -4,20 +4,18 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 
 #include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-#include "azure_c_shared_utility/gballoc.h"
-
-#include "azure_c_shared_utility/crt_abstractions.h"
-#include "errno.h"
 #include <stddef.h>
+#include <stdarg.h>
 #include <limits.h>
 #include <float.h>
 #include <math.h>
+#include <errno.h>
+#include "azure_c_shared_utility/gballoc.h"
+#include "azure_c_shared_utility/optimize_size.h"
+#include "azure_c_shared_utility/crt_abstractions.h"
 
 
-#ifdef WINCE
+#if defined (WINCE) || defined (TIZENRT)
 #pragma warning(disable:4756) // warning C4756: overflow in constant arithmetic
 
 // These defines are missing in math.h for WEC2013 SDK
@@ -35,8 +33,6 @@
 
 #ifdef _MSC_VER
 #else
-
-#include <stdarg.h>
 
 /*Codes_SRS_CRT_ABSTRACTIONS_99_008: [strcat_s shall append the src to dst and terminates the resulting string with a null character.]*/
 int strcat_s(char* dst, size_t dstSizeInBytes, const char* src)
@@ -202,7 +198,7 @@ int strcpy_s(char* dst, size_t dstSizeInBytes, const char* src)
         }
         else
         {
-            memcpy(dst, src, neededBuffer + 1);
+            (void)memcpy(dst, src, neededBuffer + 1);
             /*Codes_SRS_CRT_ABSTRACTIONS_99_011: [strcpy_s shall return Zero upon success]*/
             result = 0;
         }
@@ -386,7 +382,6 @@ unsigned long long strtoull_s(const char* nptr, char** endptr, int base)
 /*Codes_SRS_CRT_ABSTRACTIONS_21_024: [If the string is 'NAN' or 'NAN(...)' (ignoring case), the strtof_s must return 0.0f and points endptr to the first character after the 'NAN' sequence.]*/
 /*Codes_SRS_CRT_ABSTRACTIONS_21_033: [If the string is 'INF' of 'INFINITY' (ignoring case), the strtold_s must return the INFINITY value for long double.]*/
 /*Codes_SRS_CRT_ABSTRACTIONS_21_034: [If the string is 'NAN' or 'NAN(...)' (ignoring case), the strtold_s must return 0.0 and points endptr to the first character after the 'NAN' sequence.]*/
-#define TOUPPER(c)      (((c>='a') && (c<='z'))?c-'a'+'A':c)
 static int substricmp(const char* nptr, const char* subsrt)
 {
     int result = 0;
@@ -730,7 +725,7 @@ int unsignedIntToString(char* destination, size_t destinationSize, unsigned int 
         (destinationSize < 2) /*because the smallest number is '0\0' which requires 2 characters*/
         )
     {
-        result = __LINE__;
+        result = __FAILURE__;
     }
     else
     {
@@ -759,7 +754,7 @@ int unsignedIntToString(char* destination, size_t destinationSize, unsigned int 
         else
         {
             /*Codes_SRS_CRT_ABSTRACTIONS_02_002: [If the conversion fails for any reason (for example, insufficient buffer space), a non-zero return value shall be supplied and unsignedIntToString shall fail.] */
-            result = __LINE__;
+            result = __FAILURE__;
         }
     }
     return result;
@@ -781,7 +776,7 @@ int size_tToString(char* destination, size_t destinationSize, size_t value)
         (destinationSize < 2) /*because the smallest number is '0\0' which requires 2 characters*/
         )
     {
-        result = __LINE__;
+        result = __FAILURE__;
     }
     else
     {
@@ -810,7 +805,7 @@ int size_tToString(char* destination, size_t destinationSize, size_t value)
         else
         {
             /*Codes_SRS_CRT_ABSTRACTIONS_02_002: [If the conversion fails for any reason (for example, insufficient buffer space), a non-zero return value shall be supplied and unsignedIntToString shall fail.] */
-            result = __LINE__;
+            result = __FAILURE__;
         }
     }
     return result;

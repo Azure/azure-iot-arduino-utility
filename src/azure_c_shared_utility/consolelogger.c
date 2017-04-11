@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
 #include <stdarg.h>
 #include <stdio.h>
+#include <time.h>
 #include "azure_c_shared_utility/xlogging.h"
 
 void consolelogger_log(LOG_CATEGORY log_category, const char* file, const char* func, const int line, unsigned int options, const char* format, ...)
@@ -18,10 +15,10 @@ void consolelogger_log(LOG_CATEGORY log_category, const char* file, const char* 
     
     switch (log_category)
     {
-    case LOG_INFO:
+    case AZ_LOG_INFO:
         (void)printf("Info: ");
         break;
-    case LOG_ERROR:
+    case AZ_LOG_ERROR:
         (void)printf("Error: Time:%.24s File:%s Func:%s Line:%d ", ctime(&t), file, func, line);
         break;
     default:

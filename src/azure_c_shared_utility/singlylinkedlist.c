@@ -2,13 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #include <stdlib.h>
-#ifdef _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-#include <stdbool.h>
-
 #include "azure_c_shared_utility/gballoc.h"
 #include "azure_c_shared_utility/singlylinkedlist.h"
+#include "azure_c_shared_utility/optimize_size.h"
 
 typedef struct LIST_ITEM_INSTANCE_TAG
 {
@@ -109,7 +105,7 @@ int singlylinkedlist_remove(SINGLYLINKEDLIST_HANDLE list, LIST_ITEM_HANDLE item)
 	if ((list == NULL) ||
         (item == NULL))
     {
-        result = __LINE__;
+        result = __FAILURE__;
     }
     else
     {
@@ -141,7 +137,7 @@ int singlylinkedlist_remove(SINGLYLINKEDLIST_HANDLE list, LIST_ITEM_HANDLE item)
 		if (current_item == NULL)
 		{
 			/* Codes_SRS_LIST_01_025: [If the item item_handle is not found in the list, then singlylinkedlist_remove shall fail and return a non-zero value.] */
-			result = __LINE__;
+			result = __FAILURE__;
 		}
 		else
 		{
