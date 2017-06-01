@@ -30,7 +30,8 @@ typedef enum LOG_CATEGORY_TAG
 #define FUNC_NAME __func__
 #endif
 
-typedef void(*LOGGER_LOG)(LOG_CATEGORY log_category, const char* file, const char* func, const int line, unsigned int options, const char* format, ...);
+typedef void(*LOGGER_LOG)(LOG_CATEGORY log_category, const char* file, const char* func, int line, unsigned int options, const char* format, ...);
+typedef void(*LOGGER_LOG_GETLASTERROR)(const char* file, const char* func, int line, const char* format, ...);
 
 #define LOG_NONE 0x00
 #define LOG_LINE 0x01
@@ -52,18 +53,33 @@ typedef void(*LOGGER_LOG)(LOG_CATEGORY log_category, const char* file, const cha
 #define xlogging_set_log_function(...)
 #define LogErrorWinHTTPWithGetLastErrorAsString(...)
 #define UNUSED(x) (void)(x)
+
+#elif defined(ESP8266_RTOS)
+#include "c_types.h"
+#define LogInfo(FORMAT, ...) do {    \
+        static const char flash_str[] ICACHE_RODATA_ATTR STORE_ATTR = FORMAT;  \
+        printf(flash_str, ##__VA_ARGS__);   \
+        printf("\n");\
+    } while((void)0,0)
+    
+#define LogError LogInfo
+#define LOG(log_category, log_options, FORMAT, ...)  { \
+        static const char flash_str[] ICACHE_RODATA_ATTR STORE_ATTR = (FORMAT); \
+        printf(flash_str, ##__VA_ARGS__); \
+        printf("\r\n"); \
+}
+
+
 #elif defined(ARDUINO_ARCH_ESP8266)
 /*
 The ESP8266 compiler doesn't do a good job compiling this code; it doesn't understand that the 'format' is
 a 'const char*' and moves it to RAM as a global variable, increasing the .bss size. So we create a
 specific LogInfo that explicitly pins the 'format' on the PROGMEM (flash) using a _localFORMAT variable
 with the macro PSTR.
-
 #define ICACHE_FLASH_ATTR   __attribute__((section(".irom0.text")))
 #define PROGMEM     ICACHE_RODATA_ATTR
 #define PSTR(s) (__extension__({static const char __c[] PROGMEM = (s); &__c[0];}))
 const char* __localFORMAT = PSTR(FORMAT);
-
 On the other hand, vsprintf does not support the pinned 'format' and os_printf does not work with va_list,
 so we compacted the log in the macro LogInfo.
 */
@@ -90,19 +106,26 @@ so we compacted the log in the macro LogInfo.
 #endif
 
 #if defined _MSC_VER
-#define LogInfo(FORMAT, ...) do{LOG(AZ_LOG_INFO, LOG_LINE, FORMAT, __VA_ARGS__); }while(0)
+#define LogInfo(FORMAT, ...) do{LOG(AZ_LOG_INFO, LOG_LINE, FORMAT, __VA_ARGS__); }while((void)0,0)
 #else
-#define LogInfo(FORMAT, ...) do{LOG(AZ_LOG_INFO, LOG_LINE, FORMAT, ##__VA_ARGS__); }while(0)
+#define LogInfo(FORMAT, ...) do{LOG(AZ_LOG_INFO, LOG_LINE, FORMAT, ##__VA_ARGS__); }while((void)0,0)
 #endif
 
 #if defined _MSC_VER
-#define LogError(FORMAT, ...) do{ LOG(AZ_LOG_ERROR, LOG_LINE, FORMAT, __VA_ARGS__); }while(0)
+
+#if !defined(WINCE)
+extern void xlogging_set_log_function_GetLastError(LOGGER_LOG_GETLASTERROR log_function);
+extern LOGGER_LOG_GETLASTERROR xlogging_get_log_function_GetLastError(void);
+#define LogLastError(FORMAT, ...) do{ LOGGER_LOG_GETLASTERROR l = xlogging_get_log_function_GetLastError(); if(l!=NULL) l(__FILE__, FUNC_NAME, __LINE__, FORMAT, __VA_ARGS__); }while((void)0,0)
+#endif
+
+#define LogError(FORMAT, ...) do{ LOG(AZ_LOG_ERROR, LOG_LINE, FORMAT, __VA_ARGS__); }while((void)0,0)
 #define TEMP_BUFFER_SIZE 1024
 #define MESSAGE_BUFFER_SIZE 260
 #define LogErrorWinHTTPWithGetLastErrorAsString(FORMAT, ...) do { \
                 DWORD errorMessageID = GetLastError(); \
+                char messageBuffer[MESSAGE_BUFFER_SIZE]; \
                 LogError(FORMAT, __VA_ARGS__); \
-                CHAR messageBuffer[MESSAGE_BUFFER_SIZE]; \
                 if (errorMessageID == 0) \
                 {\
                     LogError("GetLastError() returned 0. Make sure you are calling this right after the code that failed. "); \
@@ -128,9 +151,9 @@ so we compacted the log in the macro LogInfo.
                         LogError("GetLastError: %s.", messageBuffer); \
                     }\
                 }\
-            } while(0)
+            } while((void)0,0)
 #else
-#define LogError(FORMAT, ...) do{ LOG(AZ_LOG_ERROR, LOG_LINE, FORMAT, ##__VA_ARGS__); }while(0)
+#define LogError(FORMAT, ...) do{ LOG(AZ_LOG_ERROR, LOG_LINE, FORMAT, ##__VA_ARGS__); }while((void)0,0)
 #endif
 
 #ifdef __cplusplus
