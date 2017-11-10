@@ -1,18 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+// This is the Arduino-specific version of xlogging.h
+
 #ifndef XLOGGING_H
 #define XLOGGING_H
 
 #include "azure_c_shared_utility/agenttime.h"
 #include "azure_c_shared_utility/optimize_size.h"
 
-#if defined(ESP8266_RTOS)
-#include "c_types.h"
-#endif
-
 #if defined(ARDUINO_ARCH_ESP8266)
 #include "esp8266/azcpgmspace.h"
+#define STRINGS_C_SPRINTF_BUFFER_SIZE 512
 #endif
 
 #ifdef __cplusplus
@@ -21,10 +20,6 @@ extern "C" {
 #else
 #include <stdio.h>
 #endif /* __cplusplus */
-
-#ifdef TIZENRT
-#undef LOG_INFO
-#endif
 
 typedef enum LOG_CATEGORY_TAG
 {
@@ -62,21 +57,6 @@ typedef void(*LOGGER_LOG_GETLASTERROR)(const char* file, const char* func, int l
 #define xlogging_set_log_function(...)
 #define LogErrorWinHTTPWithGetLastErrorAsString(...)
 #define UNUSED(x) (void)(x)
-
-#elif defined(ESP8266_RTOS)
-#define LogInfo(FORMAT, ...) do {    \
-        static const char flash_str[] ICACHE_RODATA_ATTR STORE_ATTR = FORMAT;  \
-        printf(flash_str, ##__VA_ARGS__);   \
-        printf("\n");\
-    } while((void)0,0)
-    
-#define LogError LogInfo
-#define LOG(log_category, log_options, FORMAT, ...)  { \
-        static const char flash_str[] ICACHE_RODATA_ATTR STORE_ATTR = (FORMAT); \
-        printf(flash_str, ##__VA_ARGS__); \
-        printf("\r\n"); \
-}
-
 
 #elif defined(ARDUINO_ARCH_ESP8266)
 /*
@@ -120,11 +100,9 @@ so we compacted the log in the macro LogInfo.
 
 #if defined _MSC_VER
 
-#if !defined(WINCE)
 extern void xlogging_set_log_function_GetLastError(LOGGER_LOG_GETLASTERROR log_function);
 extern LOGGER_LOG_GETLASTERROR xlogging_get_log_function_GetLastError(void);
 #define LogLastError(FORMAT, ...) do{ LOGGER_LOG_GETLASTERROR l = xlogging_get_log_function_GetLastError(); if(l!=NULL) l(__FILE__, FUNC_NAME, __LINE__, FORMAT, __VA_ARGS__); }while((void)0,0)
-#endif
 
 #define LogError(FORMAT, ...) do{ LOG(AZ_LOG_ERROR, LOG_LINE, FORMAT, __VA_ARGS__); }while((void)0,0)
 #define TEMP_BUFFER_SIZE 1024
@@ -159,9 +137,9 @@ extern LOGGER_LOG_GETLASTERROR xlogging_get_log_function_GetLastError(void);
                     }\
                 }\
             } while((void)0,0)
-#else
+#else // _MSC_VER
 #define LogError(FORMAT, ...) do{ LOG(AZ_LOG_ERROR, LOG_LINE, FORMAT, ##__VA_ARGS__); }while((void)0,0)
-#endif
+#endif // _MSC_VER
 
 extern void xlogging_set_log_function(LOGGER_LOG log_function);
 extern LOGGER_LOG xlogging_get_log_function(void);
@@ -169,19 +147,19 @@ extern LOGGER_LOG xlogging_get_log_function(void);
 #endif /* ARDUINO_ARCH_ESP8266 */
 
 
-    /**
-     * @brief   Print the memory content byte pre byte in hexadecimal and as a char it the byte correspond to any printable ASCII chars.
-     *
-     *    This function prints the 'size' bytes in the 'buf' to the log. It will print in portions of 16 bytes, 
-     *         and will print the byte as a hexadecimal value, and, it is a printable, this function will print 
-     *         the correspondent ASCII character.
-     *    Non printable characters will shows as a single '.'. 
-     *    For this function, printable characters are all characters between ' ' (0x20) and '~' (0x7E).
-     *
-     * @param   buf  Pointer to the memory address with the buffer to print.
-     * @param   size Number of bytes to print.
-     */
-    extern void xlogging_dump_buffer(const void* buf, size_t size);
+/**
+    * @brief   Print the memory content byte pre byte in hexadecimal and as a char it the byte correspond to any printable ASCII chars.
+    *
+    *    This function prints the 'size' bytes in the 'buf' to the log. It will print in portions of 16 bytes, 
+    *         and will print the byte as a hexadecimal value, and, it is a printable, this function will print 
+    *         the correspondent ASCII character.
+    *    Non printable characters will shows as a single '.'. 
+    *    For this function, printable characters are all characters between ' ' (0x20) and '~' (0x7E).
+    *
+    * @param   buf  Pointer to the memory address with the buffer to print.
+    * @param   size Number of bytes to print.
+    */
+extern void xlogging_dump_bytes(const void* buf, size_t size);
 
 #ifdef __cplusplus
 }   // extern "C"
