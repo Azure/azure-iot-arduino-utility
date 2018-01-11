@@ -225,3 +225,4 @@ CONSTMAP_RESULT ConstMap_GetInternals(CONSTMAP_HANDLE handle, const char*const**
     }
     return result;
 }
+

@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#ifndef SAMPLE_H
+#define SAMPLE_H
+
 #ifdef __cplusplus
-#include <cstdlib>
-#else
-#include <stdlib.h>
+extern "C" {
 #endif
 
-#include "azure_c_shared_utility/gb_rand.h"
+    void sample_run(void);
 
-/*this is rand*/
-int gb_rand(void)
-{
-    return rand();
+#ifdef __cplusplus
 }
+#endif
 
+#endif /* SAMPLE_H */

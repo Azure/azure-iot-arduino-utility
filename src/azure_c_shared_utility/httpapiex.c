@@ -655,3 +655,4 @@ HTTPAPIEX_RESULT HTTPAPIEX_SetOption(HTTPAPIEX_HANDLE handle, const char* option
     }
     return result;
 }
+

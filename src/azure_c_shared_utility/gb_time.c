@@ -36,3 +36,4 @@ size_t gb_strftime(char * s, size_t maxsize, const char * format, const struct t
 }
 
 #endif
+

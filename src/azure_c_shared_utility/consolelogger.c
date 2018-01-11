@@ -228,3 +228,4 @@ void consolelogger_log(LOG_CATEGORY log_category, const char* file, const char* 
     }
 }
 
+

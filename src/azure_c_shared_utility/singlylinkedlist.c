@@ -365,3 +365,4 @@ int singlylinkedlist_foreach(SINGLYLINKEDLIST_HANDLE list, LIST_ACTION_FUNCTION 
 
     return result;
 }
+

@@ -189,3 +189,4 @@ BUFFER_HANDLE uws_frame_encoder_encode(WS_FRAME_TYPE opcode, const unsigned char
 
     return result;
 }
+

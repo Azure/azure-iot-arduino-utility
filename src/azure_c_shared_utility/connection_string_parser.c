@@ -232,3 +232,4 @@ int connectionstringparser_splitHostName(STRING_HANDLE hostNameString, STRING_HA
 
     return result;
 }
+

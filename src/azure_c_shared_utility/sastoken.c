@@ -344,3 +344,4 @@ STRING_HANDLE SASToken_CreateString(const char* key, const char* scope, const ch
     }
     return result;
 }
+

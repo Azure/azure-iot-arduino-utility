@@ -507,7 +507,7 @@ static int ParseStringToDecimal(const char *src, int* dst)
     int result;
     char* next;
 
-    (*dst) = strtol(src, &next, 0);
+    (*dst) = (int)strtol(src, &next, 0);
     if ((src == next) || ((((*dst) == INT_MAX) || ((*dst) == INT_MIN)) && (errno != 0)))
     {
         result = __LINE__;
@@ -957,3 +957,4 @@ const IO_INTERFACE_DESCRIPTION* http_proxy_io_get_interface_description(void)
     /* Codes_SRS_HTTP_PROXY_IO_01_049: [ `http_proxy_io_get_interface_description` shall return a pointer to an `IO_INTERFACE_DESCRIPTION` structure that contains pointers to the functions: `http_proxy_io_retrieve_options`, `http_proxy_io_retrieve_create`, `http_proxy_io_destroy`, `http_proxy_io_open`, `http_proxy_io_close`, `http_proxy_io_send` and `http_proxy_io_dowork`. ]*/
     return &http_proxy_io_interface_description;
 }
+

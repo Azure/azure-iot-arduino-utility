@@ -113,7 +113,7 @@ UWS_CLIENT_HANDLE uws_client_create(const char* hostname, unsigned int port, con
         /* Codes_SRS_UWS_CLIENT_01_411: [ If `protocol_count` is non zero and `protocols` is NULL then `uws_client_create` shall fail and return NULL. ]*/
         ((protocols == NULL) && (protocol_count > 0)))
     {
-        LogError("Invalid arguments: hostname = %p, resource_name = %p, protocols = %p, protocol_count = %zu", hostname, resource_name, protocols, protocol_count);
+        LogError("Invalid arguments: hostname = %p, resource_name = %p, protocols = %p, protocol_count = %u", hostname, resource_name, protocols, protocol_count);
         result = NULL;
     }
     else
@@ -130,7 +130,7 @@ UWS_CLIENT_HANDLE uws_client_create(const char* hostname, unsigned int port, con
 
         if (i < protocol_count)
         {
-            LogError("Protocol index %zu has NULL name", i);
+            LogError("Protocol index %u has NULL name", i);
             result = NULL;
         }
         else
@@ -347,7 +347,7 @@ UWS_CLIENT_HANDLE uws_client_create_with_io(const IO_INTERFACE_DESCRIPTION* io_i
         /* Codes_SRS_UWS_CLIENT_01_525: [ If `protocol_count` is non zero and `protocols` is NULL then `uws_client_create_with_io` shall fail and return NULL. ]*/
         ((protocols == NULL) && (protocol_count > 0)))
     {
-        LogError("Invalid arguments: io_interface = %p, resource_name = %p, protocols = %p, protocol_count = %zu", io_interface, resource_name, protocols, protocol_count);
+        LogError("Invalid arguments: io_interface = %p, resource_name = %p, protocols = %p, protocol_count = %u", io_interface, resource_name, protocols, protocol_count);
         result = NULL;
     }
     else
@@ -364,7 +364,7 @@ UWS_CLIENT_HANDLE uws_client_create_with_io(const IO_INTERFACE_DESCRIPTION* io_i
         if (i < protocol_count)
         {
             /* Codes_SRS_UWS_CLIENT_01_526: [ If the `protocol` member of any of the items in the `protocols` argument is NULL, then `uws_client_create_with_io` shall fail and return NULL. ]*/
-            LogError("Protocol index %zu has NULL name", i);
+            LogError("Protocol index %u has NULL name", i);
             result = NULL;
         }
         else
@@ -846,7 +846,7 @@ static int ParseStringToDecimal(const char *src, int* dst)
     int result;
     char* next;
 
-    (*dst) = strtol(src, &next, 0);
+    (*dst) = (int)strtol(src, &next, 0);
     if ((src == next) || ((((*dst) == INT_MAX) || ((*dst) == INT_MIN)) && (errno != 0)))
     {
         result = __FAILURE__;
@@ -1975,3 +1975,4 @@ OPTIONHANDLER_HANDLE uws_client_retrieve_options(UWS_CLIENT_HANDLE uws_client)
 
     return result;
 }
+

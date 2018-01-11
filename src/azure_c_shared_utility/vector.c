@@ -16,7 +16,7 @@ VECTOR_HANDLE VECTOR_create(size_t elementSize)
     /* Codes_SRS_VECTOR_10_002: [VECTOR_create shall fail and return NULL if elementsize is 0.] */
     if (elementSize == 0)
     {
-        LogError("invalid elementSize(%zd).", elementSize);
+        LogError("invalid elementSize(%u).", elementSize);
         result = NULL;
     }
     else
@@ -94,7 +94,7 @@ int VECTOR_push_back(VECTOR_HANDLE handle, const void* elements, size_t numEleme
        /* Codes_SRS_VECTOR_10_011: [VECTOR_push_back shall fail and return non-zero if `handle` is NULL.] */
        /* Codes_SRS_VECTOR_10_034: [VECTOR_push_back shall fail and return non-zero if `elements` is NULL.] */
        /* Codes_SRS_VECTOR_10_035: [VECTOR_push_back shall fail and return non-zero if `numElements` is 0.] */
-        LogError("invalid argument - handle(%p), elements(%p), numElements(%zd).", handle, elements, numElements);
+        LogError("invalid argument - handle(%p), elements(%p), numElements(%u).", handle, elements, numElements);
         result = __FAILURE__;
     }
     else
@@ -130,7 +130,7 @@ void VECTOR_erase(VECTOR_HANDLE handle, void* elements, size_t numElements)
         /* Codes_SRS_VECTOR_10_015: [VECTOR_erase shall return if `handle` is NULL.] */
         /* Codes_SRS_VECTOR_10_038: [VECTOR_erase shall return if `elements` is NULL.] */
         /* Codes_SRS_VECTOR_10_039: [VECTOR_erase shall return if `numElements` is 0.] */
-        LogError("invalid argument - handle(%p), elements(%p), numElements(%zd).", handle, elements, numElements);
+        LogError("invalid argument - handle(%p), elements(%p), numElements(%u).", handle, elements, numElements);
     }
     else
     {
@@ -155,7 +155,7 @@ void VECTOR_erase(VECTOR_HANDLE handle, void* elements, size_t numElements)
                 if (src > srcEnd)
                 {
                     /* Codes_SRS_VECTOR_10_040: [VECTOR_erase shall return if `elements` is out of bound.] */
-                    LogError("invalid argument - numElements(%zd) is out of bound.", numElements);
+                    LogError("invalid argument - numElements(%u) is out of bound.", numElements);
                 }
                 else
                 {
@@ -218,7 +218,7 @@ void* VECTOR_element(VECTOR_HANDLE handle, size_t index)
         if (index >= handle->count)
         {
             /* Codes_SRS_VECTOR_10_020: [VECTOR_element shall fail and return NULL if the given index is out of range.] */
-            LogError("invalid argument - index(%zd); should be >= 0 and < %zd.", index, handle->count);
+            LogError("invalid argument - index(%u); should be >= 0 and < %u.", index, handle->count);
             result = NULL;
         }
         else
@@ -336,3 +336,4 @@ size_t VECTOR_size(VECTOR_HANDLE handle)
     }
     return result;
 }
+

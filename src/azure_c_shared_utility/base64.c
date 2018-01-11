@@ -366,3 +366,4 @@ STRING_HANDLE Base64_Encoder(BUFFER_HANDLE input)
     }
     return result;
 }
+

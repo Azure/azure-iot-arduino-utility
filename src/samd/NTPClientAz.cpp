@@ -2,21 +2,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #if defined(ARDUINO_ARCH_SAMD)
-#include "NTPClient.h"
+#include "NTPClientAz.h"
 
 #define LOCAL_UDP_PORT 2390
 
-NTPClient::NTPClient() :
+NTPClientAz::NTPClientAz() :
     _udp()
 {
 }
 
-int NTPClient::begin()
+int NTPClientAz::begin()
 {
     return _udp.begin(LOCAL_UDP_PORT);
 }
 
-uint32_t NTPClient::getEpochTime(const char* host, int port, unsigned long timeout)
+uint32_t NTPClientAz::getEpochTime(const char* host, int port, unsigned long timeout)
 {
     if (host == NULL || port < 1) {
         return (uint32_t)-1;
@@ -32,12 +32,12 @@ uint32_t NTPClient::getEpochTime(const char* host, int port, unsigned long timeo
     return parseResponse();
 }
 
-void NTPClient::end()
+void NTPClientAz::end()
 {
     _udp.stop();
 }
 
-void NTPClient::prepareRequest()
+void NTPClientAz::prepareRequest()
 {
     memset(_buffer, 0, NTP_PACKET_SIZE);
 
@@ -55,14 +55,14 @@ void NTPClient::prepareRequest()
     _buffer[15] = 52;
 }
 
-void NTPClient::sendRequest(const char* host, int port)
+void NTPClientAz::sendRequest(const char* host, int port)
 {
     _udp.beginPacket(host, port);
     _udp.write(_buffer, NTP_PACKET_SIZE);
     _udp.endPacket();
 }
 
-int NTPClient::receiveResponse(unsigned long timeout)
+int NTPClientAz::receiveResponse(unsigned long timeout)
 {
     long start = millis();
     int size = 0;
@@ -80,7 +80,7 @@ int NTPClient::receiveResponse(unsigned long timeout)
     return 1;
 }
 
-uint32_t NTPClient::parseResponse()
+uint32_t NTPClientAz::parseResponse()
 {
     uint16_t high = word(_buffer[40], _buffer[41]);
     uint16_t low = word(_buffer[42], _buffer[43]);

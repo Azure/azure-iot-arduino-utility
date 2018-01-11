@@ -175,3 +175,4 @@ bool utf8_checker_is_valid_utf8(const unsigned char* utf8_str, size_t length)
 
     return result;
 }
+

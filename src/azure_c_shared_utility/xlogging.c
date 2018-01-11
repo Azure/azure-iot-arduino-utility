@@ -68,3 +68,4 @@ LOGGER_LOG_GETLASTERROR xlogging_get_log_function_GetLastError(void)
 #endif
 
 #endif
+

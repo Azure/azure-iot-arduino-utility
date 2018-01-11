@@ -266,3 +266,4 @@ void OptionHandler_Destroy(OPTIONHANDLER_HANDLE handle)
         DestroyInternal(handle);
     }
 }
+

@@ -632,3 +632,4 @@ BUFFER_HANDLE BUFFER_clone(BUFFER_HANDLE handle)
     }
     return result;
 }
+

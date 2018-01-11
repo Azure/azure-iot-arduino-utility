@@ -333,3 +333,4 @@ HTTP_HEADERS_HANDLE HTTPHeaders_Clone(HTTP_HEADERS_HANDLE handle)
     }
     return result;
 }
+

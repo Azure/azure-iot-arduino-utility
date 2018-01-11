@@ -165,3 +165,4 @@ STRING_HANDLE URL_Encode(STRING_HANDLE input)
     }
     return result;
 }
+
