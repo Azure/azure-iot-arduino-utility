@@ -8,7 +8,7 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/strings.h"
 
-DEFINE_ENUM_STRINGS(MAP_RESULT, MAP_RESULT_VALUES);
+MU_DEFINE_ENUM_STRINGS(MAP_RESULT, MAP_RESULT_VALUES);
 
 typedef struct MAP_HANDLE_DATA_TAG
 {
@@ -18,7 +18,7 @@ typedef struct MAP_HANDLE_DATA_TAG
     MAP_FILTER_CALLBACK mapFilterCallback;
 }MAP_HANDLE_DATA;
 
-#define LOG_MAP_ERROR LogError("result = %s", ENUM_TO_STRING(MAP_RESULT, result));
+#define LOG_MAP_ERROR LogError("result = %s", MU_ENUM_TO_STRING(MAP_RESULT, result));
 
 MAP_HANDLE Map_Create(MAP_FILTER_CALLBACK mapFilterFunc)
 {
@@ -44,7 +44,7 @@ void Map_Destroy(MAP_HANDLE handle)
         /*Codes_SRS_MAP_02_004: [Map_Destroy shall release all resources associated with the map.] */
         MAP_HANDLE_DATA* handleData = (MAP_HANDLE_DATA*)handle;
         size_t i;
-      
+
         for (i = 0; i < handleData->count; i++)
         {
             free(handleData->keys[i]);
@@ -117,7 +117,7 @@ MAP_HANDLE Map_Clone(MAP_HANDLE handle)
         }
         else
         {
-            if (handleData->count == 0)  
+            if (handleData->count == 0)
             {
                 result->count = 0;
                 result->keys = NULL;
@@ -142,7 +142,7 @@ MAP_HANDLE Map_Clone(MAP_HANDLE handle)
                     LogError("unable to clone values");
                     for (i = 0; i < result->count; i++)
                     {
-                        free(result->keys[i]); 
+                        free(result->keys[i]);
                     }
                     free(result->keys);
                     free(result);
@@ -165,7 +165,7 @@ static int Map_IncreaseStorageKeysValues(MAP_HANDLE_DATA* handleData)
     if (newKeys == NULL)
     {
         LogError("realloc error");
-        result = __FAILURE__;
+        result = MU_FAILURE;
     }
     else
     {
@@ -193,7 +193,7 @@ static int Map_IncreaseStorageKeysValues(MAP_HANDLE_DATA* handleData)
                     handleData->keys = undoneKeys;
                 }
             }
-            result = __FAILURE__;
+            result = MU_FAILURE;
         }
         else
         {
@@ -221,7 +221,7 @@ static void Map_DecreaseStorageKeysValues(MAP_HANDLE_DATA* handleData)
     {
         /*certainly > 1...*/
         char** undoneValues;
-        char** undoneKeys = (char**)realloc(handleData->keys, sizeof(char*)* (handleData->count - 1)); 
+        char** undoneKeys = (char**)realloc(handleData->keys, sizeof(char*)* (handleData->count - 1));
         if (undoneKeys == NULL)
         {
             LogError("CATASTROPHIC error, unable to undo through realloc to a smaller size");
@@ -296,7 +296,7 @@ static int insertNewKeyValue(MAP_HANDLE_DATA* handleData, const char* key, const
     int result;
     if (Map_IncreaseStorageKeysValues(handleData) != 0) /*this increases handleData->count*/
     {
-        result = __FAILURE__;
+        result = MU_FAILURE;
     }
     else
     {
@@ -304,7 +304,7 @@ static int insertNewKeyValue(MAP_HANDLE_DATA* handleData, const char* key, const
         {
             Map_DecreaseStorageKeysValues(handleData);
             LogError("unable to mallocAndStrcpy_s");
-            result = __FAILURE__;
+            result = MU_FAILURE;
         }
         else
         {
@@ -313,7 +313,7 @@ static int insertNewKeyValue(MAP_HANDLE_DATA* handleData, const char* key, const
                 free(handleData->keys[handleData->count - 1]);
                 Map_DecreaseStorageKeysValues(handleData);
                 LogError("unable to mallocAndStrcpy_s");
-                result = __FAILURE__;
+                result = MU_FAILURE;
             }
             else
             {
@@ -321,7 +321,7 @@ static int insertNewKeyValue(MAP_HANDLE_DATA* handleData, const char* key, const
             }
         }
     }
-    return result; 
+    return result;
 }
 
 MAP_RESULT Map_Add(MAP_HANDLE handle, const char* key, const char* value)
@@ -337,7 +337,7 @@ MAP_RESULT Map_Add(MAP_HANDLE handle, const char* key, const char* value)
         )
     {
         result = MAP_INVALIDARG;
-        LOG_MAP_ERROR; 
+        LOG_MAP_ERROR;
     }
     else
     {
@@ -652,7 +652,7 @@ STRING_HANDLE Map_ToJSON(MAP_HANDLE handle)
                     STRING_delete(key);
                 }
             }
-                
+
             if (breakFor)
             {
                 LogError("error happened during JSON string builder");
@@ -675,4 +675,3 @@ STRING_HANDLE Map_ToJSON(MAP_HANDLE handle)
     return result;
 
 }
-

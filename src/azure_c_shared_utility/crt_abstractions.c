@@ -4,8 +4,8 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 
 #include <stdlib.h>
-#include <stddef.h>
 #include <stdarg.h>
+#include <string.h>
 #include <limits.h>
 #include <float.h>
 #include <math.h>
@@ -15,7 +15,7 @@
 #include "azure_c_shared_utility/crt_abstractions.h"
 
 // VS 2008 does not have INFINITY and all the nice goodies...
-#if defined (TIZENRT) || defined (WINCE)
+#if defined (TIZENRT)
 #define DEFINE_INFINITY 1
 #else
 
@@ -41,7 +41,7 @@
 #define NAN        ((float)(INFINITY * 0.0F))
 #endif
 
-#ifdef _MSC_VER
+#if defined (_MSC_VER) || defined (MINGW_HAS_SECURE_API)
 #else
 
 /*Codes_SRS_CRT_ABSTRACTIONS_99_008: [strcat_s shall append the src to dst and terminates the resulting string with a null character.]*/
@@ -70,6 +70,7 @@ int strcat_s(char* dst, size_t dstSizeInBytes, const char* src)
         else
         {
             size_t dstStrLen = 0;
+            size_t src_len = strlen(src);
 #ifdef __STDC_LIB_EXT1__
             dstStrLen = strnlen_s(dst, dstSizeInBytes);
 #else
@@ -84,12 +85,26 @@ int strcat_s(char* dst, size_t dstSizeInBytes, const char* src)
             {
                 result = EINVAL;
             }
+            // If we are instructed to write too much data to the buffer
+            // return ERANGE
+            else if ((src_len + dstStrLen) >= dstSizeInBytes)
+            {
+                dst[0] = '\0';
+                result = ERANGE;
+            }
             else
             {
+                // memcpy should at most copy the result of strlen(src) or there may be
+                // some issues with copying unwanted memory
+                size_t bytes_to_cpy = dstSizeInBytes - dstStrLen;
+                if (bytes_to_cpy > src_len)
+                {
+                    bytes_to_cpy = src_len;
+                }
+
                 /*Codes_SRS_CRT_ABSTRACTIONS_99_009: [The initial character of src shall overwrite the terminating null character of dst.]*/
-                (void)strncpy(&dst[dstStrLen], src, dstSizeInBytes - dstStrLen);
+                if (memcpy(&dst[dstStrLen], src, bytes_to_cpy) == NULL)
                 /*Codes_SRS_CRT_ABSTRACTIONS_99_006: [If the dstSizeInBytes is 0 or smaller than the required size for dst & src, the error code returned shall be ERANGE & dst[0] set to 0.]*/
-                if (dst[dstSizeInBytes-1] != '\0')
                 {
                     dst[0] = '\0';
                     result = ERANGE;
@@ -97,12 +112,12 @@ int strcat_s(char* dst, size_t dstSizeInBytes, const char* src)
                 else
                 {
                     /*Codes_SRS_CRT_ABSTRACTIONS_99_003: [strcat_s shall return Zero upon success.]*/
+                    dst[dstStrLen+bytes_to_cpy] = '\0';
                     result = 0;
                 }
             }
         }
     }
-
     return result;
 }
 
@@ -127,7 +142,7 @@ int strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t maxCount
     {
         result = EINVAL;
     }
-    else 
+    else
     {
         size_t srcLength = strlen(src);
         if (maxCount != _TRUNCATE)
@@ -146,7 +161,7 @@ int strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t maxCount
             }
             else
             {
-                (void)strncpy(dst, src, srcLength);
+                (void)memcpy(dst, src, srcLength);
                 dst[srcLength] = '\0';
                 /*Codes_SRS_CRT_ABSTRACTIONS_99_018: [strncpy_s shall return Zero upon success]*/
                 result = 0;
@@ -160,7 +175,7 @@ int strncpy_s(char* dst, size_t dstSizeInBytes, const char* src, size_t maxCount
                 srcLength = dstSizeInBytes - 1;
                 truncationFlag = 1;
             }
-            (void)strncpy(dst, src, srcLength);
+            (void)memcpy(dst, src, srcLength);
             dst[srcLength] = '\0';
             result = 0;
         }
@@ -233,13 +248,13 @@ int sprintf_s(char* dst, size_t dstSizeInBytes, const char* format, ...)
     {
         /*Codes_SRS_CRT_ABSTRACTIONS_99_033: [sprintf_s shall check the format string for valid formatting characters.  If the check fails, the function returns -1.]*/
 
-#if defined _MSC_VER 
+#if defined _MSC_VER
 #error crt_abstractions is not provided for Microsoft Compilers
 #else
         /*not Microsoft compiler... */
 #if defined (__STDC_VERSION__) || (__cplusplus)
 #if ( \
-        ((__STDC_VERSION__  == 199901L) || (__STDC_VERSION__ == 201000L) || (__STDC_VERSION__ == 201112L)) || \
+        ((__STDC_VERSION__  == 199901L) || (__STDC_VERSION__ == 201000L) || (__STDC_VERSION__ == 201112L) || (__STDC_VERSION__ == 201710L)) || \
         (defined __cplusplus) \
     )
         /*C99 compiler*/
@@ -274,7 +289,7 @@ int sprintf_s(char* dst, size_t dstSizeInBytes, const char* format, ...)
     }
     return result;
 }
-#endif /* _MSC_VER */
+#endif /* _MSC_VER || MINGW_HAS_SECURE_API */
 
 /*Codes_SRS_CRT_ABSTRACTIONS_21_006: [The strtoull_s must use the letters from a(or A) through z(or Z) to represent the numbers between 10 to 35.]*/
 /* returns the integer value that correspond to the character 'c'. If the character is invalid, it returns -1. */
@@ -293,7 +308,7 @@ unsigned long long strtoull_s(const char* nptr, char** endptr, int base)
     bool validStr = true;
     char* runner = (char*)nptr;
     bool isNegative = false;
-	int digitVal;
+    int digitVal;
 
     /*Codes_SRS_CRT_ABSTRACTIONS_21_005: [The strtoull_s must convert number using base 2 to 36.]*/
     /*Codes_SRS_CRT_ABSTRACTIONS_21_012: [If the subject sequence is empty or does not have the expected form, the strtoull_s must not perform any conversion; the value of nptr is stored in the object pointed to by endptr, provided that endptr is not a NULL pointer.]*/
@@ -338,7 +353,7 @@ unsigned long long strtoull_s(const char* nptr, char** endptr, int base)
                 runner++;
             }
         }
-        
+
         if(base == 0)
         {
             /*Codes_SRS_CRT_ABSTRACTIONS_21_007: [If the base is 0 and no special chars precedes the number, strtoull_s must convert to a decimal (base 10).]*/
@@ -455,7 +470,7 @@ static bool isNaN(const char** endptr)
             FST_OVERFLOW,           \
             FST_ERROR
 
-DEFINE_ENUM(FLOAT_STRING_TYPE, FLOAT_STRING_TYPE_VALUES);
+MU_DEFINE_ENUM(FLOAT_STRING_TYPE, FLOAT_STRING_TYPE_VALUES);
 
 static FLOAT_STRING_TYPE splitFloatString(const char* nptr, char** endptr, int *signal, double *fraction, int *exponential)
 {
@@ -465,7 +480,7 @@ static FLOAT_STRING_TYPE splitFloatString(const char* nptr, char** endptr, int *
     unsigned long long ullFraction = 0;
     int integerSize = 0;
     int fractionSize = 0;
-	char* startptr;
+    char* startptr;
 
     (*endptr) = (char*)nptr;
 
@@ -524,7 +539,7 @@ static FLOAT_STRING_TYPE splitFloatString(const char* nptr, char** endptr, int *
                 result = FST_OVERFLOW;
             }
         }
-        
+
         if (((**endptr) == 'e') || ((**endptr) == 'E'))
         {
             startptr = (*endptr) + 1;
@@ -543,7 +558,7 @@ static FLOAT_STRING_TYPE splitFloatString(const char* nptr, char** endptr, int *
         {
             /* Add ullInteger to ullFraction. */
             ullFraction += (ullInteger * (unsigned long long)(pow(10, (double)fractionSize)));
-            (*fraction) = ((double)ullFraction / (pow(10.0f, (double)(fractionSize + integerSize - 1))));
+            (*fraction) = ((double)ullFraction / (pow(10.0f, ((double)fractionSize + (double)integerSize - 1.00))));
 
             /* Unify rest of integerSize and fractionSize in the exponential. */
             (*exponential) += integerSize - 1;
@@ -582,7 +597,7 @@ float strtof_s(const char* nptr, char** endptr)
             break;
         case FST_NUMBER:
             val = fraction * pow(10.0, (double)exponential) * (double)signal;
-            if ((val >= (FLT_MAX * (-1))) && (val <= FLT_MAX))
+            if ((val >= (FLT_MAX * (-1.0f))) && (val <= FLT_MAX))
             {
                 /*Codes_SRS_CRT_ABSTRACTIONS_21_016: [The strtof_s must return the float that represents the value in the initial part of the string. If any.]*/
                 result = (float)val;
@@ -634,12 +649,12 @@ long double strtold_s(const char* nptr, char** endptr)
         {
         case FST_INFINITY:
             /*Codes_SRS_CRT_ABSTRACTIONS_21_033: [If the string is 'INF' of 'INFINITY' (ignoring case), the strtold_s must return the INFINITY value for long double.]*/
-            result = INFINITY * (signal);
+            result = (long double)INFINITY * (long double)(signal);
             errno = 0;
             break;
         case FST_NAN:
             /*Codes_SRS_CRT_ABSTRACTIONS_21_034: [If the string is 'NAN' or 'NAN(...)' (ignoring case), the strtold_s must return 0.0 and points endptr to the first character after the 'NAN' sequence.]*/
-            result = NAN;
+            result = (long double)NAN;
             break;
         case FST_NUMBER:
             if ((exponential != DBL_MAX_10_EXP || (fraction <= 1.7976931348623158)) &&
@@ -651,13 +666,13 @@ long double strtold_s(const char* nptr, char** endptr)
             else
             {
                 /*Codes_SRS_CRT_ABSTRACTIONS_21_032: [If the correct value is outside the range, the strtold_s returns the value plus or minus HUGE_VALL, and errno will receive the value ERANGE.]*/
-                result = HUGE_VALF * (signal);
+                result = (long double)HUGE_VALF * (long double)(signal);
                 errno = ERANGE;
             }
             break;
         case FST_OVERFLOW:
             /*Codes_SRS_CRT_ABSTRACTIONS_21_032: [If the correct value is outside the range, the strtold_s returns the value plus or minus HUGE_VALL, and errno will receive the value ERANGE.]*/
-            result = HUGE_VALF * (signal);
+            result = (long double)HUGE_VALF * (long double)(signal);
             errno = ERANGE;
             break;
         default:
@@ -681,7 +696,7 @@ long double strtold_s(const char* nptr, char** endptr)
 int mallocAndStrcpy_s(char** destination, const char* source)
 {
     int result;
-	int copied_result;
+    int copied_result;
     /*Codes_SRS_CRT_ABSTRACTIONS_99_036: [destination parameter or source parameter is NULL, the error code returned shall be EINVAL and destination shall not be modified.]*/
     if ((destination == NULL) || (source == NULL))
     {
@@ -692,7 +707,7 @@ int mallocAndStrcpy_s(char** destination, const char* source)
     {
         size_t l = strlen(source);
         char* temp = (char*)malloc(l + 1);
-        
+
         /*Codes_SRS_CRT_ABSTRACTIONS_99_037: [Upon failure to allocate memory for the destination, the function will return ENOMEM.]*/
         if (temp == NULL)
         {
@@ -735,7 +750,7 @@ int unsignedIntToString(char* destination, size_t destinationSize, unsigned int 
         (destinationSize < 2) /*because the smallest number is '0\0' which requires 2 characters*/
         )
     {
-        result = __FAILURE__;
+        result = MU_FAILURE;
     }
     else
     {
@@ -764,7 +779,7 @@ int unsignedIntToString(char* destination, size_t destinationSize, unsigned int 
         else
         {
             /*Codes_SRS_CRT_ABSTRACTIONS_02_002: [If the conversion fails for any reason (for example, insufficient buffer space), a non-zero return value shall be supplied and unsignedIntToString shall fail.] */
-            result = __FAILURE__;
+            result = MU_FAILURE;
         }
     }
     return result;
@@ -786,7 +801,7 @@ int size_tToString(char* destination, size_t destinationSize, size_t value)
         (destinationSize < 2) /*because the smallest number is '0\0' which requires 2 characters*/
         )
     {
-        result = __FAILURE__;
+        result = MU_FAILURE;
     }
     else
     {
@@ -815,9 +830,8 @@ int size_tToString(char* destination, size_t destinationSize, size_t value)
         else
         {
             /*Codes_SRS_CRT_ABSTRACTIONS_02_002: [If the conversion fails for any reason (for example, insufficient buffer space), a non-zero return value shall be supplied and unsignedIntToString shall fail.] */
-            result = __FAILURE__;
+            result = MU_FAILURE;
         }
     }
     return result;
 }
-

@@ -4,21 +4,36 @@
 #ifndef GBALLOC_H
 #define GBALLOC_H
 
-#include "azure_c_shared_utility/umock_c_prod.h"
-
 #ifdef __cplusplus
-#include <cstddef>
 #include <cstdlib>
-extern "C"
-{
 #else
-#include <stddef.h>
 #include <stdlib.h>
 #endif
 
+#include "umock_c/umock_c_prod.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+// GB_USE_CUSTOM_HEAP disables the implementations in gballoc.c and
+// requires that an external library implement the gballoc_malloc family
+// declared here.
+#if defined(GB_USE_CUSTOM_HEAP)
+MOCKABLE_FUNCTION(, void*, gballoc_malloc, size_t, size);
+MOCKABLE_FUNCTION(, void*, gballoc_calloc, size_t, nmemb, size_t, size);
+MOCKABLE_FUNCTION(, void*, gballoc_realloc, void*, ptr, size_t, size);
+MOCKABLE_FUNCTION(, void, gballoc_free, void*, ptr);
+
+#define malloc gballoc_malloc
+#define calloc gballoc_calloc
+#define realloc gballoc_realloc
+#define free gballoc_free
+
 /* all translation units that need memory measurement need to have GB_MEASURE_MEMORY_FOR_THIS defined */
 /* GB_DEBUG_ALLOC is the switch that turns the measurement on/off, so that it is not on always */
-#if defined(GB_DEBUG_ALLOC)
+#elif defined(GB_DEBUG_ALLOC)
 
 MOCKABLE_FUNCTION(, int, gballoc_init);
 MOCKABLE_FUNCTION(, void, gballoc_deinit);

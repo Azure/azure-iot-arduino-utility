@@ -6,12 +6,12 @@
 #include <Arduino.h>
 #include <time.h>
 #include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
+#include "user_interface.h"
+#include "Esp.h"
 
 // Times before 2010 (1970 + 40 years) are invalid
-#define MIN_EPOCH 40 * 365 * 24 * 3600
-
+#define MIN_EPOCH (40 * 365 * 24 * 3600)
 
 static void initSerial() {
     // Start serial and initialize stdout
@@ -25,10 +25,11 @@ static void initWifi(const char* ssid, const char* pass) {
     Serial.println(ssid);
     
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, pass);
     while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
+        delay(500);
+        Serial.print(".");
     }
     
     Serial.println("\r\nConnected to wifi");
@@ -58,6 +59,10 @@ void esp8266_sample_init(const char* ssid, const char* password)
     initSerial();
     initWifi(ssid, password);
     initTime();
+    /* Uncomment wdt_disable() and comment out next line when gdb debugging. 
+    Note: use of system_get_free_heap_size() function may also help in tracking available memory. */
+    //wdt_disable(); 
+    wdt_enable(5000);
 }
 
 #endif // ARDUINO_ARCH_ESP8266

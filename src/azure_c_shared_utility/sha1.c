@@ -438,4 +438,3 @@ static void SHA1ProcessMessageBlock(SHA1Context *context)
     context->Message_Block_Index = 0;
 }
 
-

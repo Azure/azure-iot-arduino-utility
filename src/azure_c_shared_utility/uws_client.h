@@ -4,18 +4,21 @@
 #ifndef UWS_CLIENT_H
 #define UWS_CLIENT_H
 
-#include "xio.h"
-#include "azure_c_shared_utility/umock_c_prod.h"
-#include "azure_c_shared_utility/optionhandler.h"
-
 #ifdef __cplusplus
 #include <cstddef>
 #include <cstdint>
-extern "C" {
 #else
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#endif
+
+#include "xio.h"
+#include "umock_c/umock_c_prod.h"
+#include "azure_c_shared_utility/optionhandler.h"
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 typedef struct UWS_CLIENT_INSTANCE_TAG* UWS_CLIENT_HANDLE;
@@ -25,7 +28,7 @@ typedef struct UWS_CLIENT_INSTANCE_TAG* UWS_CLIENT_HANDLE;
     WS_SEND_FRAME_ERROR, \
     WS_SEND_FRAME_CANCELLED
 
-DEFINE_ENUM(WS_SEND_FRAME_RESULT, WS_SEND_FRAME_RESULT_VALUES);
+MU_DEFINE_ENUM(WS_SEND_FRAME_RESULT, WS_SEND_FRAME_RESULT_VALUES);
 
 #define WS_OPEN_RESULT_VALUES \
     WS_OPEN_OK, \
@@ -44,7 +47,7 @@ DEFINE_ENUM(WS_SEND_FRAME_RESULT, WS_SEND_FRAME_RESULT_VALUES);
     WS_OPEN_ERROR_BAD_RESPONSE_STATUS, \
     WS_OPEN_ERROR_BASE64_ENCODE_FAILED
 
-DEFINE_ENUM(WS_OPEN_RESULT, WS_OPEN_RESULT_VALUES);
+MU_DEFINE_ENUM(WS_OPEN_RESULT, WS_OPEN_RESULT_VALUES);
 
 #define WS_ERROR_VALUES \
     WS_ERROR_NOT_ENOUGH_MEMORY, \
@@ -53,10 +56,11 @@ DEFINE_ENUM(WS_OPEN_RESULT, WS_OPEN_RESULT_VALUES);
     WS_ERROR_UNDERLYING_IO_ERROR, \
     WS_ERROR_CANNOT_CLOSE_UNDERLYING_IO
 
-DEFINE_ENUM(WS_ERROR, WS_ERROR_VALUES);
+MU_DEFINE_ENUM(WS_ERROR, WS_ERROR_VALUES);
 
-#define WS_FRAME_TYPE_TEXT      0x01
-#define WS_FRAME_TYPE_BINARY    0x02
+#define WS_FRAME_TYPE_UNKNOWN       0x00
+#define WS_FRAME_TYPE_TEXT          0x01
+#define WS_FRAME_TYPE_BINARY        0x02
 
 /* Codes_SRS_UWS_CLIENT_01_324: [ 1000 indicates a normal closure, meaning that the purpose for which the connection was established has been fulfilled. ]*/
 /* Codes_SRS_UWS_CLIENT_01_325: [ 1001 indicates that an endpoint is "going away", such as a server going down or a browser having navigated away from a page. ]*/
@@ -106,7 +110,7 @@ MOCKABLE_FUNCTION(, int, uws_client_close_async, UWS_CLIENT_HANDLE, uws_client, 
 MOCKABLE_FUNCTION(, int, uws_client_close_handshake_async, UWS_CLIENT_HANDLE, uws_client, uint16_t, close_code, const char*, close_reason, ON_WS_CLOSE_COMPLETE, on_ws_close_complete, void*, on_ws_close_complete_context);
 MOCKABLE_FUNCTION(, int, uws_client_send_frame_async, UWS_CLIENT_HANDLE, uws_client, unsigned char, frame_type, const unsigned char*, buffer, size_t, size, bool, is_final, ON_WS_SEND_FRAME_COMPLETE, on_ws_send_frame_complete, void*, callback_context);
 MOCKABLE_FUNCTION(, void, uws_client_dowork, UWS_CLIENT_HANDLE, uws_client);
-
+MOCKABLE_FUNCTION(, int, uws_client_set_request_header, UWS_CLIENT_HANDLE, uws_client, const char*, name, const char*, value);
 MOCKABLE_FUNCTION(, int, uws_client_set_option, UWS_CLIENT_HANDLE, uws_client, const char*, option_name, const void*, value);
 MOCKABLE_FUNCTION(, OPTIONHANDLER_HANDLE, uws_client_retrieve_options, UWS_CLIENT_HANDLE, uws_client);
 

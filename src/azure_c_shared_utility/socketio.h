@@ -4,15 +4,18 @@
 #ifndef SOCKETIO_H
 #define SOCKETIO_H
 
-#include "azure_c_shared_utility/xio.h"
-#include "azure_c_shared_utility/xlogging.h"
-#include "azure_c_shared_utility/umock_c_prod.h"
-
 #ifdef __cplusplus
-extern "C" {
 #include <cstddef>
 #else
 #include <stddef.h>
+#endif /* __cplusplus */
+
+#include "azure_c_shared_utility/xio.h"
+#include "azure_c_shared_utility/xlogging.h"
+#include "umock_c/umock_c_prod.h"
+
+#ifdef __cplusplus
+extern "C" {
 #endif /* __cplusplus */
 
 typedef struct SOCKETIO_CONFIG_TAG
@@ -21,6 +24,12 @@ typedef struct SOCKETIO_CONFIG_TAG
     int port;
     void* accepted_socket;
 } SOCKETIO_CONFIG;
+
+typedef enum SOCKETIO_ADDRESS_TYPE_TAG
+{
+    ADDRESS_TYPE_IP,
+    ADDRESS_TYPE_DOMAIN_SOCKET
+} SOCKETIO_ADDRESS_TYPE;
 
 #define RECEIVE_BYTES_VALUE     64
 

@@ -32,7 +32,7 @@ static int set_and_validate_x509_type(TLSIO_OPTIONS* options, TLSIO_OPTIONS_x509
     {
         // This case also rejects the nonsensical TLSIO_OPTIONS_x509_TYPE_UNSPECIFIED
         LogError("Unsupported x509 type: %d", x509_type);
-        result = __FAILURE__;
+        result = MU_FAILURE;
     }
     else if (options->x509_type == TLSIO_OPTIONS_x509_TYPE_UNSPECIFIED)
     {
@@ -43,7 +43,7 @@ static int set_and_validate_x509_type(TLSIO_OPTIONS* options, TLSIO_OPTIONS_x509
     else if (options->x509_type != x509_type)
     {
         LogError("Supplied x509 type conflicts with previously set x509");
-        result = __FAILURE__;
+        result = MU_FAILURE;
     }
     else
     {
@@ -70,8 +70,9 @@ void tlsio_options_release_resources(TLSIO_OPTIONS* options)
 
 static bool is_supported_string_option(const char* name)
 {
-    return 
+    return
         (strcmp(name, OPTION_TRUSTED_CERT) == 0) ||
+        (strcmp(name, OPTION_OPENSSL_CIPHER_SUITE) == 0) ||
         (strcmp(name, SU_OPTION_X509_CERT) == 0) ||
         (strcmp(name, SU_OPTION_X509_PRIVATE_KEY) == 0) ||
         (strcmp(name, OPTION_X509_ECC_CERT) == 0) ||
@@ -309,5 +310,4 @@ OPTIONHANDLER_HANDLE tlsio_options_retrieve_options_ex(TLSIO_OPTIONS* options,
 
     return result;
 }
-
 

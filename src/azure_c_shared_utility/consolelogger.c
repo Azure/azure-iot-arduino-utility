@@ -7,7 +7,7 @@
 #include "azure_c_shared_utility/xlogging.h"
 #include "azure_c_shared_utility/consolelogger.h"
 
-#if (defined(_MSC_VER)) && (!(defined WINCE))
+#if (defined(_MSC_VER))
 #include "windows.h"
 
 /*returns a string as if printed by vprintf*/
@@ -115,14 +115,14 @@ static char* lastErrorToString(DWORD lastError)
 /*the function will also attempt to produce some human readable strings for GetLastError*/
 void consolelogger_log_with_GetLastError(const char* file, const char* func, int line, const char* format, ...)
 {
-	DWORD lastError;
-	char* lastErrorAsString;
-	int lastErrorAsString_should_be_freed;
-	time_t t;
+    DWORD lastError;
+    char* lastErrorAsString;
+    int lastErrorAsString_should_be_freed;
+    time_t t;
     int systemMessage_should_be_freed;
-	char* systemMessage;
+    char* systemMessage;
     int userMessage_should_be_freed;
-	char* userMessage;
+    char* userMessage;
 
     va_list args;
     va_start(args, format);
@@ -204,8 +204,8 @@ void consolelogger_log(LOG_CATEGORY log_category, const char* file, const char* 
     va_list args;
     va_start(args, format);
 
-    t = time(NULL); 
-    
+    t = time(NULL);
+
     switch (log_category)
     {
     case AZ_LOG_INFO:
@@ -227,5 +227,4 @@ void consolelogger_log(LOG_CATEGORY log_category, const char* file, const char* 
         (void)printf("\r\n");
     }
 }
-
 

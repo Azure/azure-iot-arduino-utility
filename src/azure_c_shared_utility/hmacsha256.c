@@ -33,4 +33,3 @@ HMACSHA256_RESULT HMACSHA256_ComputeHash(const unsigned char* key, size_t keyLen
 
     return result;
 }
-

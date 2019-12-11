@@ -14,4 +14,3 @@ int gb_rand(void)
 {
     return rand();
 }
-
