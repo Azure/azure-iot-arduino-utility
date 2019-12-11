@@ -231,4 +231,3 @@ int hmacResult(HMACContext *ctx, uint8_t *digest)
 }
 
 
-

@@ -9,7 +9,7 @@
     a) some of the stdio.h symbols shall be redefined, for example: fopen => gb_fopen
     b) all "code" using the fopen will actually (because of the preprocessor) call to gb_fopen
     c) gb_fopen shall blindly call into fopen, thus realizing a passthrough
-    
+
     reason is: unittesting. fopen is comes with the C Run Time and cannot be mocked (that is, in the global namespace cannot exist a function called fopen
 
 2) if GB_STDIO_INTERCEPT is not defined then
@@ -17,7 +17,11 @@
 */
 
 #ifndef GB_STDIO_INTERCEPT
+#ifdef __cplusplus
+#include <cstdio>
+#else
 #include <stdio.h>
+#endif
 #else
 
 /*source level intercepting of function calls*/
@@ -27,15 +31,18 @@
 #define ftell           ftell_never_called_never_implemented_always_forgotten
 #define fprintf         fprintf_never_called_never_implemented_always_forgotten
 
-#include "azure_c_shared_utility/umock_c_prod.h"
+#ifdef __cplusplus
+#include <cstdio>
+#else
+#include <stdio.h>
+#endif
+
+#include "umock_c/umock_c_prod.h"
 
 
 #ifdef __cplusplus
-#include <cstdio.h>
 extern "C"
 {
-#else
-#include <stdio.h>
 #endif
 
 #undef fopen

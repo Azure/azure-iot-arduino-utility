@@ -8,7 +8,7 @@
 #define TLSIO_OPTIONS_H
 
 #include "azure_c_shared_utility/xio.h"
-#include "azure_c_shared_utility/umock_c_prod.h"
+#include "umock_c/umock_c_prod.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +40,7 @@ extern "C" {
 
     // This struct contains the commonly-used options which
     // are supported by tlsio_options.
-    typedef struct TLSIO_OPTIONS_TAG 
+    typedef struct TLSIO_OPTIONS_TAG
     {
         int supported_options;
         const char* trusted_certs;
@@ -61,7 +61,7 @@ extern "C" {
     // an anonymous clone_option, and an anonymous destroy_option.
 
     // The helper for xio_setoption
-    TLSIO_OPTIONS_RESULT tlsio_options_set(TLSIO_OPTIONS* options,  
+    TLSIO_OPTIONS_RESULT tlsio_options_set(TLSIO_OPTIONS* options,
         const char* optionName, const void* value);
 
     // Use this helper for xio_retrieveoptions if this helper covers all your tlsio options
