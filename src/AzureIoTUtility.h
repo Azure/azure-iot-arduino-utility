@@ -7,7 +7,11 @@
 #include "azure_c_shared_utility/platform.h"
 #include "azure_c_shared_utility/lock.h"
 #include "azure_c_shared_utility/threadapi.h"
+#include "azure_c_shared_utility/crt_abstractions.h"
+#include "azure_c_shared_utility/shared_util_options.h"
+#include "azure_c_shared_utility/tlsio.h"
+#include "azure_c_shared_utility/xlogging.h"
 
-#define AzureIoTUtilityVersion "1.1.12"
+#define AzureIoTUtilityVersion "1.3.8"
 
 #endif //AZUREIOTUTILITY_H
