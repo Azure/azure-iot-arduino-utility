@@ -326,10 +326,10 @@ static int on_io_recv(void *context, unsigned char *buf, size_t sz)
             }
         }
 
-        result = tls_io_instance->socket_io_read_byte_count;
+        result = (int) tls_io_instance->socket_io_read_byte_count;
         if (result > (int)sz)
         {
-            result = sz;
+            result = (int)sz;
         }
 
         if (result > 0)
@@ -400,7 +400,7 @@ static int on_io_send(void *context, const unsigned char *buf, size_t sz)
     {
         TLS_IO_INSTANCE *tls_io_instance = (TLS_IO_INSTANCE *)context;
         ON_SEND_COMPLETE on_complete_callback = NULL;
-        void *context = NULL;
+        context = NULL;
 
         // Only allow Application data type message to send on_send_complete callback.
         if (tls_io_instance->ssl.out_msgtype == MBEDTLS_SSL_MSG_APPLICATION_DATA)
@@ -416,7 +416,7 @@ static int on_io_send(void *context, const unsigned char *buf, size_t sz)
         }
         else
         {
-            result = sz;
+            result = (int)sz;
         }
     }
     return result;
@@ -444,6 +444,8 @@ static void mbedtls_uninit(TLS_IO_INSTANCE *tls_io_instance)
         mbedtls_ssl_free(&tls_io_instance->ssl);
         mbedtls_ssl_config_free(&tls_io_instance->config);
         mbedtls_x509_crt_free(&tls_io_instance->trusted_certificates_parsed);
+        mbedtls_x509_crt_free(&tls_io_instance->owncert);
+        mbedtls_pk_free(&tls_io_instance->pKey);
         mbedtls_ctr_drbg_free(&tls_io_instance->ctr_drbg);
         mbedtls_entropy_free(&tls_io_instance->entropy);
 
@@ -467,6 +469,8 @@ static void mbedtls_init(TLS_IO_INSTANCE *tls_io_instance)
         }
         // mbedTLS initialize...
         mbedtls_x509_crt_init(&tls_io_instance->trusted_certificates_parsed);
+        mbedtls_x509_crt_init(&tls_io_instance->owncert);
+        mbedtls_pk_init(&tls_io_instance->pKey);
 
         mbedtls_entropy_init(&tls_io_instance->entropy);
         // Add a weak entropy source here,avoid some platform doesn't have strong / hardware entropy
@@ -729,7 +733,7 @@ int tlsio_mbedtls_send(CONCRETE_IO_HANDLE tls_io, const void *buffer, size_t siz
             tls_io_instance->send_complete_info.on_send_complete = on_send_complete;
             tls_io_instance->send_complete_info.on_send_complete_callback_context = callback_context;
             tls_io_instance->send_complete_info.last_fragmented_req_status = IO_SEND_OK;
-            int out_left = size;
+            int out_left = (int)size;
             result = 0;
 
             do
@@ -948,7 +952,8 @@ int tlsio_mbedtls_setoption(CONCRETE_IO_HANDLE tls_io, const char *optionName, c
                 free(temp_cert);
                 result = MU_FAILURE;
             }
-            else if (tls_io_instance->pKey.pk_info != NULL && mbedtls_ssl_conf_own_cert(&tls_io_instance->config, &tls_io_instance->owncert, &tls_io_instance->pKey) != 0)
+            else if (mbedtls_pk_get_type(&tls_io_instance->pKey) != MBEDTLS_PK_NONE &&
+                     mbedtls_ssl_conf_own_cert(&tls_io_instance->config, &tls_io_instance->owncert, &tls_io_instance->pKey) != 0)
             {
                 LogError("failure calling mbedtls_ssl_conf_own_cert");
                 free(temp_cert);
@@ -1069,17 +1074,15 @@ OPTIONHANDLER_HANDLE tlsio_mbedtls_retrieveoptions(CONCRETE_IO_HANDLE handle)
                 OptionHandler_Destroy(result);
                 result = NULL;
             }
-            else if (&tls_io_instance->owncert != NULL && tls_io_instance->x509_certificate != NULL &&
-                    OptionHandler_AddOption(result, SU_OPTION_X509_CERT, tls_io_instance->x509_certificate) != OPTIONHANDLER_OK)
+            else if (tls_io_instance->x509_certificate != NULL &&
+                     OptionHandler_AddOption(result, SU_OPTION_X509_CERT, tls_io_instance->x509_certificate) != OPTIONHANDLER_OK)
             {
                 LogError("unable to save x509certificate option");
                 OptionHandler_Destroy(result);
                 result = NULL;
             }
-            else if (
-                (&tls_io_instance->pKey != NULL) && tls_io_instance->x509_private_key != NULL &&
-                (OptionHandler_AddOption(result, SU_OPTION_X509_PRIVATE_KEY, tls_io_instance->x509_private_key) != OPTIONHANDLER_OK)
-                )
+            else if (tls_io_instance->x509_private_key != NULL &&
+                     OptionHandler_AddOption(result, SU_OPTION_X509_PRIVATE_KEY, tls_io_instance->x509_private_key) != OPTIONHANDLER_OK)
             {
                 LogError("unable to save x509privatekey option");
                 OptionHandler_Destroy(result);

@@ -56,16 +56,19 @@ int umocktypes_are_equal_charptr(const char** left, const char** right)
 {
     int result;
 
-	if ((left == NULL) || (right == NULL))
-	{
-		/* Codes_SRS_UMOCKTYPES_CHARPTR_20_001: [ If any of the arguments is NULL, umocktypes_are_equal_charptr shall return -1. ]*/
-		UMOCK_LOG("umocktypes_are_equal_charptr: Bad arguments:left = %p, right = %p.", left, right);
-		result = -1;
-	}
-	else if (*left == *right)
+    if (
+        /* Codes_SRS_UMOCKTYPES_CHARPTR_42_001: [ If left is NULL, umocktypes_are_equal_charptr shall return -1. ]*/
+        (left == NULL) ||
+        /* Codes_SRS_UMOCKTYPES_CHARPTR_42_002: [ If right is NULL, umocktypes_are_equal_charptr shall return -1. ]*/
+        (right == NULL))
     {
-		/* Codes_SRS_UMOCKTYPES_CHARPTR_01_007: [ If left and right are equal, umocktypes_are_equal_charptr shall return 1. ]*/
-		result = 1;
+        UMOCK_LOG("umocktypes_are_equal_charptr: Bad arguments:left = %p, right = %p.", left, right);
+        result = -1;
+    }
+    else if (*left == *right)
+    {
+        /* Codes_SRS_UMOCKTYPES_CHARPTR_01_007: [ If left and right are equal, umocktypes_are_equal_charptr shall return 1. ]*/
+        result = 1;
     }
     else if ((*left == NULL) || (*right == NULL))
     {
@@ -280,7 +283,8 @@ int umocktypes_charptr_register_types(void)
 
     /* Codes_SRS_UMOCKTYPES_CHARPTR_01_001: [ umocktypes_charptr_register_types shall register support for the types char\* and const char\* by using the REGISTER_UMOCK_VALUE_TYPE macro provided by umockc. ]*/
     if ((REGISTER_TYPE(char*, charptr) != 0) ||
-        (REGISTER_TYPE(const char*, const_charptr) != 0))
+        (REGISTER_TYPE(const char*, const_charptr) != 0) ||
+        (REGISTER_TYPE(char const*, const_charptr) != 0))
     {
         /* Codes_SRS_UMOCKTYPES_CHARPTR_01_039: [ If registering any of the types fails, umocktypes_charptr_register_types shall fail and return a non-zero value. ]*/
         UMOCK_LOG("umocktypes_charptr_register_types: Cannot register types.");
